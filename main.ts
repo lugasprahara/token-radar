@@ -3,8 +3,9 @@
 // What a run does:
 //   1. reads the sealed snapshot (--input <file>, or a directory holding
 //      snapshot.json; /input when the flag is absent),
-//   2. scores every pre-token protocol in it with the radar model
-//      (lib/model.ts) and refuses to hand in a board the gate would refuse,
+//   2. scores every rankable pre-token protocol in it with the radar-3
+//      model (lib/model.ts) and refuses to hand in a board the gate
+//      would refuse,
 //   3. writes board.json and the dashboard's data.js to the output dir
 //      (MAKEFUN_OUTPUT_DIR, --output, or /output),
 //   4. copies dashboard/ and screenshots/ across, checking the screenshot
@@ -98,9 +99,12 @@ function main(): void {
   });
   writeFileSync(join(out, 'dossier.json'), dossier);
 
+  const v = radar.validation;
   process.stdout.write(
     `token radar: ${snapshot.protocols.length} protocols, ${snapshot.watchlist.length} on the watchlist, ` +
-      `${board.length} rows scored (${radar.early_size} early, ${radar.live_size} live set aside)\n` +
+      `${board.length} rows scored (${radar.early_size} beyond the watchlist, ${radar.live_size} live set aside)\n` +
+      `token radar: leave-one-out over ${v.curve.n} live comps — size curve median |log10 err| ${v.curve.median_abs_log10_err} ` +
+      `vs flat multiple ${v.legacy.median_abs_log10_err}\n` +
       `token radar: wrote ${join(out, 'board.json')}, ${join(out, 'data.js')}, ${join(out, 'dashboard')} (3 files), ` +
       `${join(out, 'screenshots')} (${shots.length} images) and ${join(out, 'dossier.json')}\n`,
   );
